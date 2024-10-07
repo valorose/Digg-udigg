@@ -1,25 +1,23 @@
-{
-  "manifest_version": 2,
-  "name": "Digg eller ikke digg",
-  "version": "1.0",
-  "description": "Displays Mattilsynet smilefjes ratings for Bergen establishments",
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["styles/style.css"]
-    }
-  ],
-  "icons": {
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+const currentDomain = window.location.hostname;
+
+chrome.runtime.sendMessage({action: 'getRating', domain: currentDomain}, response => {
+  if (response && response.rating) {
+    displaySmiley(response.rating);
+  }
+});
+
+function displaySmiley(rating) {
+  const smiley = document.createElement('div');
+  smiley.className = `smilefjes-rating ${rating}`;
+  smiley.textContent = getSmileyFace(rating);
+  document.body.appendChild(smiley);
+}
+
+function getSmileyFace(rating) {
+  switch(rating) {
+    case 'happy': return '😃';
+    case 'medium': return '😐';
+    case 'sad': return '☹️';
+    default: return '❓';
   }
 }
