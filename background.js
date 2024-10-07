@@ -1,6 +1,6 @@
 let ratingsData;
 
-fetch('data/ratings.json')
+fetch('ratings.json')
   .then(response => response.json())
   .then(data => {
     ratingsData = data;
