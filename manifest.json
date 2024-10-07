@@ -14,12 +14,9 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content,js.txt"],
-      "css": ["styles (2).css"]
+      "js": ["content.js"],  // Sørg for at filnavnet her er riktig
+      "css": ["styles.css"]
     }
-  ],
-  "web_accessible_resources": [
-    "ratings.json"
   ],
   "icons": {
     "48": "icon48.png",
