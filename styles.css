@@ -5,3 +5,7 @@
   font-size: 24px;
   z-index: 9999;
 }
+
+.happy { background-color: #8ed28e; }
+.medium { background-color: #ffff99; }
+.sad { background-color: #ff9999; }
