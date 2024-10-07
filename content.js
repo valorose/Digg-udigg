@@ -20,16 +20,26 @@ chrome.storage.local.get('ratingsData', (result) => {
   for (let name in ratingsData) {
     const simplifiedName = simplifyString(name);
     if (simplifiedUrl.includes(simplifiedName)) {
-      const rating = ratingsData[name].total_karakter;
-      console.log("Rating found for establishment:", rating);
-      displaySmiley(rating);
-      break;
+      const establishment = ratingsData[name]; // Henter hele objektet
+      if (establishment && establishment.total_karakter !== undefined) {
+        const rating = establishment.total_karakter;
+        console.log("Rating found for establishment:", rating);
+        displaySmiley(rating);
+      } else {
+        console.log('Total karakter not found for:', name);
+      }
+      break; // Stopp når en match er funnet
     }
   }
 });
 
 // Funksjon for å vise smilefjes basert på vurdering
 function displaySmiley(rating) {
+  if (rating === undefined) {
+    console.error("Error: Tried to display undefined rating.");
+    return;
+  }
+
   const smileyElement = document.createElement('div');
   smileyElement.style.position = 'fixed';
   smileyElement.style.bottom = '20px';
