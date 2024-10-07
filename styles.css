@@ -4,8 +4,11 @@
   right: 10px;
   font-size: 24px;
   z-index: 9999;
+  padding: 5px;
+  border-radius: 50%;
 }
 
-.happy { background-color: #8ed28e; }
-.medium { background-color: #ffff99; }
-.sad { background-color: #ff9999; }
+.rating-0, .rating-1 { background-color: #8ed28e; }  /* Stort smil */
+.rating-2 { background-color: #ffff99; }  /* Strekmunn */
+.rating-3 { background-color: #ff9999; }  /* Sur munn */
+.rating-4, .rating-5 { background-color: #cccccc; }  /* Ikke aktuelt / Ikke vurdert */
