@@ -1,60 +1,72 @@
-// Funksjon for å hente restauranten sin vurdering fra bakgrunnsskriptet
-chrome.storage.local.get('ratingsData', (result) => {
-  if (!result.ratingsData) {
-    console.error("Ratings data not available in storage.");
+// Send melding til bakgrunnsskriptet for å hente vurderingsdata
+chrome.runtime.sendMessage({ message: 'getRatingsData' }, (response) => {
+  const ratingsData = response.ratingsData;
+
+  if (!ratingsData) {
+    console.error('Ratings data not available');
     return;
   }
 
-  const ratingsData = result.ratingsData;
-  const currentUrl = window.location.href.toLowerCase(); // Gjør URL-en til små bokstaver
-  console.log("Content script is running");
-  console.log("Current URL:", currentUrl);
-
-  // Forenkle URL-en ved å fjerne spesialtegn og mellomrom
-  function simplifyString(input) {
-    return input.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  // Sjekk om URL-en er en generisk side som skal unngås
+  const genericSites = ['google.com', 'facebook.com', 'twitter.com', 'instagram.com'];
+  const currentUrl = window.location.hostname.toLowerCase();
+  if (genericSites.some(site => currentUrl.includes(site))) {
+    console.log('Skipping generic site:', currentUrl);
+    return;
   }
 
-  const simplifiedUrl = simplifyString(currentUrl);
-  console.log("Simplified URL:", simplifiedUrl);
-
-  // Sjekk om navnet på stedet finnes i URL-en
-  for (let name in ratingsData) {
-    const simplifiedName = simplifyString(name);
-    console.log("Comparing:", simplifiedUrl, "with:", simplifiedName);
-    if (simplifiedUrl.includes(simplifiedName)) {
-      const establishment = ratingsData[name]; // Henter hele objektet
-      if (establishment && establishment.total_karakter !== undefined) {
-        const rating = establishment.total_karakter;
-        console.log("Rating found for establishment:", rating);
-        displaySmiley(rating);
-      } else {
-        console.log('Total karakter not found for:', name);
-      }
-      break; // Stopp når en match er funnet
+  // Prøv å finne navn fra nettsidetittelen eller URL-en
+  const establishmentName = document.title.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  const currentUrlCleaned = currentUrl.replace(/[^a-z0-9]/g, '');
+  let matchedName = null;
+  for (const name in ratingsData) {
+    if (currentUrlCleaned.includes(name) || establishmentName.includes(name)) {
+      matchedName = name;
+      break;
     }
+  }
+
+  if (matchedName) {
+    const rating = ratingsData[matchedName];
+    displaySmiley(rating);
+  } else {
+    console.log('No rating found for:', currentUrl);
   }
 });
 
 // Funksjon for å vise smilefjes basert på vurdering
 function displaySmiley(rating) {
-  if (rating === undefined) {
-    console.error("Error: Tried to display undefined rating.");
-    return;
-  }
-
   const smileyElement = document.createElement('div');
   smileyElement.style.position = 'fixed';
   smileyElement.style.bottom = '20px';
   smileyElement.style.right = '20px';
   smileyElement.style.zIndex = '10000';
   smileyElement.style.padding = '20px';
-  smileyElement.style.backgroundColor = 'yellow';
-  smileyElement.style.color = 'black'; // Sørg for at teksten vises
+  smileyElement.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
   smileyElement.style.border = '2px solid black';
   smileyElement.style.borderRadius = '10px';
   smileyElement.style.fontSize = '30px';
-  smileyElement.textContent = `Rating: ${rating}`;
+  smileyElement.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+
+  // Sett smilefjes-ikon basert på vurderingen (0-5)
+  switch (rating) {
+    case 0:
+      smileyElement.textContent = "😃"; // Ingen brudd, stort smil
+      break;
+    case 1:
+      smileyElement.textContent = "😊"; // Mindre brudd, stort smil
+      break;
+    case 2:
+      smileyElement.textContent = "😐"; // Brudd som krever oppfølging, strekmunn
+      break;
+    case 3:
+      smileyElement.textContent = "😕"; // Alvorlig brudd, sur munn
+      break;
+    case 4:
+    case 5:
+      smileyElement.textContent = "⚪"; // Ikke aktuelt / Ikke vurdert
+      break;
+  }
+
   document.body.appendChild(smileyElement);
-  console.log("Smiley displayed for rating:", rating);
 }
