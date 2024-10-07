@@ -1,38 +1,42 @@
-function findEstablishmentName() {
-  // This is a placeholder function. You'll need to implement logic to find the establishment name on the current page.
-  // This might involve searching for specific elements, meta tags, or using other heuristics.
-  return document.title;  // For now, we'll just use the page title as an example.
-}
+// Funksjon for å hente restauranten sin vurdering fra bakgrunnsskriptet
+chrome.storage.local.get('ratingsData', (result) => {
+  const ratingsData = result.ratingsData;
+  
+  if (!ratingsData) {
+    console.error('Ratings data not available');
+    return;
+  }
 
-const establishmentName = findEstablishmentName();
-
-chrome.runtime.sendMessage({action: 'getRating', name: establishmentName}, response => {
-  if (response && response.rating !== undefined) {
-    displaySmiley(response.rating);
+  // Prøv å finne navn fra nettsidetittelen
+  const establishmentName = document.title.trim().toLowerCase();
+  
+  if (establishmentName in ratingsData) {
+    const rating = ratingsData[establishmentName];
+    displaySmiley(rating);
+  } else {
+    console.log('No rating found for:', establishmentName);
   }
 });
 
+// Funksjon for å vise smilefjes basert på vurdering
 function displaySmiley(rating) {
-  const smiley = document.createElement('div');
-  smiley.className = `smilefjes-rating rating-${rating}`;
-  smiley.textContent = getSmileyFace(rating);
-  document.body.appendChild(smiley);
-}
+  const smileyElement = document.createElement('div');
+  smileyElement.style.position = 'fixed';
+  smileyElement.style.bottom = '10px';
+  smileyElement.style.right = '10px';
+  smileyElement.style.zIndex = '1000';
+  smileyElement.style.padding = '10px';
+  smileyElement.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+  smileyElement.style.borderRadius = '50%';
+  smileyElement.style.fontSize = '24px';
+  smileyElement.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
 
-function getSmileyFace(rating) {
-  switch(rating) {
-    case 0:
-    case 1:
-      return '😃';  // Stort smil
-    case 2:
-      return '😐';  // Strekmunn
-    case 3:
-      return '☹️';  // Sur munn
-    case 4:
-      return '❓';  // Ikke aktuelt
-    case 5:
-      return '❔';  // Ikke vurdert
-    default:
-      return '❓';
-  }
+  // Sett smilefjes-ikon basert på vurderingen (0-4)
+  if (rating === 0) smileyElement.textContent = "😡";
+  else if (rating === 1) smileyElement.textContent = "😕";
+  else if (rating === 2) smileyElement.textContent = "😐";
+  else if (rating === 3) smileyElement.textContent = "😊";
+  else if (rating === 4) smileyElement.textContent = "😃";
+
+  document.body.appendChild(smileyElement);
 }
