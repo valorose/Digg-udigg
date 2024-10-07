@@ -7,6 +7,7 @@ chrome.storage.local.get('ratingsData', (result) => {
 
   const ratingsData = result.ratingsData;
   const currentUrl = window.location.href.toLowerCase(); // Gjør URL-en til små bokstaver
+  console.log("Content script is running");
   console.log("Current URL:", currentUrl);
 
   // Forenkle URL-en ved å fjerne spesialtegn og mellomrom
@@ -15,10 +16,12 @@ chrome.storage.local.get('ratingsData', (result) => {
   }
 
   const simplifiedUrl = simplifyString(currentUrl);
+  console.log("Simplified URL:", simplifiedUrl);
 
   // Sjekk om navnet på stedet finnes i URL-en
   for (let name in ratingsData) {
     const simplifiedName = simplifyString(name);
+    console.log("Comparing:", simplifiedUrl, "with:", simplifiedName);
     if (simplifiedUrl.includes(simplifiedName)) {
       const establishment = ratingsData[name]; // Henter hele objektet
       if (establishment && establishment.total_karakter !== undefined) {
@@ -47,9 +50,11 @@ function displaySmiley(rating) {
   smileyElement.style.zIndex = '10000';
   smileyElement.style.padding = '20px';
   smileyElement.style.backgroundColor = 'yellow';
+  smileyElement.style.color = 'black'; // Sørg for at teksten vises
   smileyElement.style.border = '2px solid black';
   smileyElement.style.borderRadius = '10px';
   smileyElement.style.fontSize = '30px';
   smileyElement.textContent = `Rating: ${rating}`;
   document.body.appendChild(smileyElement);
+  console.log("Smiley displayed for rating:", rating);
 }
